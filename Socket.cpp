@@ -4,6 +4,8 @@
 #include <arpa/inet.h>
 
 
+Socket::Socket() : Socket(AddressFamily::INET, Protocol::TCP) {}
+
 Socket::Socket(AddressFamily addressFamily, Protocol protocol) {
     this->addressFamily = addressFamily;
     int fileDescriptor = socket(

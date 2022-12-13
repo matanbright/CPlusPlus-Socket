@@ -100,6 +100,7 @@ class Socket {
     private: int fileDescriptor;
     private: AddressFamily addressFamily;
 
+    public: Socket();
     public: Socket(AddressFamily addressFamily, Protocol protocol);
     private: Socket(int fileDescriptor);
     public: ~Socket();
