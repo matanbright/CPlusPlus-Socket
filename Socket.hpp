@@ -106,8 +106,8 @@ class Socket {
     public: ~Socket();
     public: void bind(const char* ipAddressString, int portNumber);
     public: void listen(int backlog);
-    public: Socket accept();
-    public: Socket accept(char* peerIpAddressString, int* peerPortNumber);
+    public: Socket* accept();
+    public: Socket* accept(char* peerIpAddressString, int* peerPortNumber);
     public: void connect(const char* ipAddressString, int portNumber);
     public: int receive(char* receivedDataBuffer, size_t receivedDataBufferSize);
     public: int receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize, char* sourceIpAddressString, int* sourcePortNumber);

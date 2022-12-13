@@ -37,21 +37,21 @@ void Socket::listen(int backlog) {
         throw UnableToListenForConnectionsException();
 }
 
-Socket Socket::accept() {
+Socket* Socket::accept() {
     int fileDescriptor = ::accept(this->fileDescriptor, nullptr, 0);
     if (fileDescriptor < 0)
         throw UnableToAcceptConnectionException();
-    return Socket(fileDescriptor);
+    return new Socket(fileDescriptor);
 }
 
-Socket Socket::accept(char* peerIpAddressString, int* peerPortNumber) {
+Socket* Socket::accept(char* peerIpAddressString, int* peerPortNumber) {
     sockaddr_storage peerIpEndpoint;
     socklen_t peerIpEndpointSize = sizeof(peerIpEndpoint);
     int fileDescriptor = ::accept(this->fileDescriptor, (sockaddr*) &peerIpEndpoint, &peerIpEndpointSize);
     if (fileDescriptor < 0)
         throw UnableToAcceptConnectionException();
     Socket::parseIpEndpoint(peerIpEndpoint, peerIpAddressString, peerPortNumber);
-    return Socket(fileDescriptor);
+    return new Socket(fileDescriptor);
 }
 
 void Socket::connect(const char* ipAddressString, int portNumber) {
