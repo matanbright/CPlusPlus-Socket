@@ -8,11 +8,7 @@ Socket::Socket() : Socket(AddressFamily::INET, Protocol::TCP) {}
 
 Socket::Socket(AddressFamily addressFamily, Protocol protocol) {
     this->addressFamily = addressFamily;
-    int fileDescriptor = socket(
-        (int) addressFamily,
-        (protocol == Socket::Protocol::TCP ? SOCK_STREAM : (protocol == Socket::Protocol::UDP ? SOCK_DGRAM : 0)),
-        0
-    );
+    int fileDescriptor = socket((int) addressFamily, (protocol == Protocol::TCP ? SOCK_STREAM : (protocol == Protocol::UDP ? SOCK_DGRAM : 0)), 0);
     if (fileDescriptor < 0)
         throw SocketInitializationFailedException();
     this->fileDescriptor = fileDescriptor;
@@ -27,7 +23,7 @@ Socket::~Socket() {
 }
 
 void Socket::bind(const char* ipAddressString, int portNumber) {
-    sockaddr_storage ipEndpoint = Socket::getIpEndpoint(this->addressFamily, ipAddressString, portNumber);
+    sockaddr_storage ipEndpoint = getIpEndpoint(this->addressFamily, ipAddressString, portNumber);
     if (::bind(this->fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
         throw UnableToBeBoundToEndpointException();
 }
@@ -50,12 +46,12 @@ Socket* Socket::accept(char* peerIpAddressString, int* peerPortNumber) {
     int fileDescriptor = ::accept(this->fileDescriptor, (sockaddr*) &peerIpEndpoint, &peerIpEndpointSize);
     if (fileDescriptor < 0)
         throw UnableToAcceptConnectionException();
-    Socket::parseIpEndpoint(peerIpEndpoint, peerIpAddressString, peerPortNumber);
+    parseIpEndpoint(peerIpEndpoint, peerIpAddressString, peerPortNumber);
     return new Socket(fileDescriptor);
 }
 
 void Socket::connect(const char* ipAddressString, int portNumber) {
-    sockaddr_storage ipEndpoint = Socket::getIpEndpoint(this->addressFamily, ipAddressString, portNumber);
+    sockaddr_storage ipEndpoint = getIpEndpoint(this->addressFamily, ipAddressString, portNumber);
     if (::connect(this->fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
         throw UnableToConnectToEndpointException();
 }
@@ -73,7 +69,7 @@ int Socket::receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize,
     int bytesReceived = recvfrom(this->fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0, (sockaddr*) &sourceIpEndpoint, &sourceIpEndpointSize);
     if (bytesReceived < 0)
         throw UnableToReceiveDataException();
-    Socket::parseIpEndpoint(sourceIpEndpoint, sourceIpAddressString, sourcePortNumber);
+    parseIpEndpoint(sourceIpEndpoint, sourceIpAddressString, sourcePortNumber);
     return bytesReceived;
 }
 
@@ -83,7 +79,7 @@ void Socket::send(const char* data, size_t dataSize) {
 }
 
 void Socket::sendTo(const char* data, size_t dataSize, const char* destinationIpAddressString, int destinationPortNumber) {
-    sockaddr_storage destinationIpEndpoint = Socket::getIpEndpoint(this->addressFamily, destinationIpAddressString, destinationPortNumber);
+    sockaddr_storage destinationIpEndpoint = getIpEndpoint(this->addressFamily, destinationIpAddressString, destinationPortNumber);
     if (::sendto(this->fileDescriptor, data, dataSize, 0, (sockaddr*) &destinationIpEndpoint, sizeof(destinationIpEndpoint)) < 0)
         throw UnableToSendDataException();
 }
