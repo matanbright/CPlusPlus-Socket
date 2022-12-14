@@ -19,17 +19,17 @@ Socket::Socket(int fileDescriptor) {
 }
 
 Socket::~Socket() {
-    this->close();
+    close();
 }
 
 void Socket::bind(const char* ipAddressString, int portNumber) {
-    sockaddr_storage ipEndpoint = getIpEndpoint(this->addressFamily, ipAddressString, portNumber);
-    if (::bind(this->fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
+    sockaddr_storage ipEndpoint = getIpEndpoint(addressFamily, ipAddressString, portNumber);
+    if (::bind(fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
         throw UnableToBeBoundToEndpointException();
 }
 
 void Socket::listen(int backlog) {
-    if (::listen(this->fileDescriptor, backlog) < 0)
+    if (::listen(fileDescriptor, backlog) < 0)
         throw UnableToListenForConnectionsException();
 }
 
@@ -51,13 +51,13 @@ Socket* Socket::accept(char* peerIpAddressString, int* peerPortNumber) {
 }
 
 void Socket::connect(const char* ipAddressString, int portNumber) {
-    sockaddr_storage ipEndpoint = getIpEndpoint(this->addressFamily, ipAddressString, portNumber);
-    if (::connect(this->fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
+    sockaddr_storage ipEndpoint = getIpEndpoint(addressFamily, ipAddressString, portNumber);
+    if (::connect(fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
         throw UnableToConnectToEndpointException();
 }
 
 int Socket::receive(char* receivedDataBuffer, size_t receivedDataBufferSize) {
-    int bytesReceived = recv(this->fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0);
+    int bytesReceived = recv(fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0);
     if (bytesReceived < 0)
         throw UnableToReceiveDataException();
     return bytesReceived;
@@ -66,7 +66,7 @@ int Socket::receive(char* receivedDataBuffer, size_t receivedDataBufferSize) {
 int Socket::receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize, char* sourceIpAddressString, int* sourcePortNumber) {
     sockaddr_storage sourceIpEndpoint;
     socklen_t sourceIpEndpointSize = sizeof(sourceIpEndpoint);
-    int bytesReceived = recvfrom(this->fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0, (sockaddr*) &sourceIpEndpoint, &sourceIpEndpointSize);
+    int bytesReceived = recvfrom(fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0, (sockaddr*) &sourceIpEndpoint, &sourceIpEndpointSize);
     if (bytesReceived < 0)
         throw UnableToReceiveDataException();
     parseIpEndpoint(sourceIpEndpoint, sourceIpAddressString, sourcePortNumber);
@@ -74,26 +74,26 @@ int Socket::receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize,
 }
 
 void Socket::send(const char* data, size_t dataSize) {
-    if (::send(this->fileDescriptor, data, dataSize, 0) < 0)
+    if (::send(fileDescriptor, data, dataSize, 0) < 0)
         throw UnableToSendDataException();
 }
 
 void Socket::sendTo(const char* data, size_t dataSize, const char* destinationIpAddressString, int destinationPortNumber) {
-    sockaddr_storage destinationIpEndpoint = getIpEndpoint(this->addressFamily, destinationIpAddressString, destinationPortNumber);
-    if (::sendto(this->fileDescriptor, data, dataSize, 0, (sockaddr*) &destinationIpEndpoint, sizeof(destinationIpEndpoint)) < 0)
+    sockaddr_storage destinationIpEndpoint = getIpEndpoint(addressFamily, destinationIpAddressString, destinationPortNumber);
+    if (::sendto(fileDescriptor, data, dataSize, 0, (sockaddr*) &destinationIpEndpoint, sizeof(destinationIpEndpoint)) < 0)
         throw UnableToSendDataException();
 }
 
 void Socket::shutdown(ShutdownManner shutdownManner) {
-    if (::shutdown(this->fileDescriptor, (int) shutdownManner) < 0)
+    if (::shutdown(fileDescriptor, (int) shutdownManner) < 0)
         throw UnableToShutdownException();
 }
 
 void Socket::close() {
     try {
-        this->shutdown(ShutdownManner::SHUTDOWN_ALL);
+        shutdown(ShutdownManner::SHUTDOWN_ALL);
     } catch (exception e) {}
-    ::close(this->fileDescriptor);
+    ::close(fileDescriptor);
 }
 
 // This function is used for creating a 'sockaddr_storage' struct from an IP-address string and a port number.
