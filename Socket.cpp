@@ -22,25 +22,25 @@ Socket::~Socket() {
     close();
 }
 
-void Socket::bind(const char* ipAddressString, int portNumber) {
+void Socket::bind(const char* ipAddressString, int portNumber) const {
     sockaddr_storage ipEndpoint = getIpEndpoint(addressFamily, ipAddressString, portNumber);
     if (::bind(fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
         throw UnableToBeBoundToEndpointException();
 }
 
-void Socket::listen(int backlog) {
+void Socket::listen(int backlog) const {
     if (::listen(fileDescriptor, backlog) < 0)
         throw UnableToListenForConnectionsException();
 }
 
-Socket* Socket::accept() {
+Socket* Socket::accept() const {
     int fileDescriptor = ::accept(this->fileDescriptor, nullptr, 0);
     if (fileDescriptor < 0)
         throw UnableToAcceptConnectionException();
     return new Socket(fileDescriptor);
 }
 
-Socket* Socket::accept(char* peerIpAddressString, int* peerPortNumber) {
+Socket* Socket::accept(char* peerIpAddressString, int* peerPortNumber) const {
     sockaddr_storage peerIpEndpoint;
     socklen_t peerIpEndpointSize = sizeof(peerIpEndpoint);
     int fileDescriptor = ::accept(this->fileDescriptor, (sockaddr*) &peerIpEndpoint, &peerIpEndpointSize);
@@ -50,20 +50,20 @@ Socket* Socket::accept(char* peerIpAddressString, int* peerPortNumber) {
     return new Socket(fileDescriptor);
 }
 
-void Socket::connect(const char* ipAddressString, int portNumber) {
+void Socket::connect(const char* ipAddressString, int portNumber) const {
     sockaddr_storage ipEndpoint = getIpEndpoint(addressFamily, ipAddressString, portNumber);
     if (::connect(fileDescriptor, (sockaddr*) &ipEndpoint, sizeof(ipEndpoint)) < 0)
         throw UnableToConnectToEndpointException();
 }
 
-int Socket::receive(char* receivedDataBuffer, size_t receivedDataBufferSize) {
+int Socket::receive(char* receivedDataBuffer, size_t receivedDataBufferSize) const {
     int bytesReceived = recv(fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0);
     if (bytesReceived < 0)
         throw UnableToReceiveDataException();
     return bytesReceived;
 }
 
-int Socket::receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize, char* sourceIpAddressString, int* sourcePortNumber) {
+int Socket::receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize, char* sourceIpAddressString, int* sourcePortNumber) const {
     sockaddr_storage sourceIpEndpoint;
     socklen_t sourceIpEndpointSize = sizeof(sourceIpEndpoint);
     int bytesReceived = recvfrom(fileDescriptor, receivedDataBuffer, receivedDataBufferSize, 0, (sockaddr*) &sourceIpEndpoint, &sourceIpEndpointSize);
@@ -73,23 +73,23 @@ int Socket::receiveFrom(char* receivedDataBuffer, size_t receivedDataBufferSize,
     return bytesReceived;
 }
 
-void Socket::send(const char* data, size_t dataSize) {
+void Socket::send(const char* data, size_t dataSize) const {
     if (::send(fileDescriptor, data, dataSize, 0) < 0)
         throw UnableToSendDataException();
 }
 
-void Socket::sendTo(const char* data, size_t dataSize, const char* destinationIpAddressString, int destinationPortNumber) {
+void Socket::sendTo(const char* data, size_t dataSize, const char* destinationIpAddressString, int destinationPortNumber) const {
     sockaddr_storage destinationIpEndpoint = getIpEndpoint(addressFamily, destinationIpAddressString, destinationPortNumber);
     if (::sendto(fileDescriptor, data, dataSize, 0, (sockaddr*) &destinationIpEndpoint, sizeof(destinationIpEndpoint)) < 0)
         throw UnableToSendDataException();
 }
 
-void Socket::shutdown(ShutdownManner shutdownManner) {
+void Socket::shutdown(ShutdownManner shutdownManner) const {
     if (::shutdown(fileDescriptor, (int) shutdownManner) < 0)
         throw UnableToShutdownException();
 }
 
-void Socket::close() {
+void Socket::close() const {
     try {
         shutdown(ShutdownManner::SHUTDOWN_ALL);
     } catch (exception e) {}
