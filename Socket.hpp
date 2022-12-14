@@ -1,5 +1,5 @@
-#if !defined(SOCKET_H)
-#define SOCKET_H
+#if !defined(SOCKET_HPP)
+#define SOCKET_HPP
 
 
 
