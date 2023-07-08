@@ -81,17 +81,17 @@ class Socket {
         }
     };
 
-    public: enum AddressFamily {
+    public: enum class AddressFamily : int {
         INET = AF_INET,
         INET6 = AF_INET6
     };
 
-    public: enum Protocol {
+    public: enum class Protocol {
         TCP,
         UDP
     };
 
-    public: enum ShutdownManner {
+    public: enum class ShutdownManner : int {
         SHUTDOWN_READ = SHUT_RD,
         SHUTDOWN_WRITE = SHUT_WR,
         SHUTDOWN_ALL = SHUT_RDWR

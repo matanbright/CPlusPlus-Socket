@@ -8,7 +8,7 @@ Socket::Socket() : Socket(AddressFamily::INET, Protocol::TCP) {}
 
 Socket::Socket(AddressFamily addressFamily, Protocol protocol) {
     this->addressFamily = addressFamily;
-    int fileDescriptor = socket((int) addressFamily, (protocol == Protocol::TCP ? SOCK_STREAM : (protocol == Protocol::UDP ? SOCK_DGRAM : 0)), 0);
+    int fileDescriptor = socket(static_cast<int>(addressFamily), (protocol == Protocol::TCP ? SOCK_STREAM : (protocol == Protocol::UDP ? SOCK_DGRAM : 0)), 0);
     if (fileDescriptor < 0)
         throw SocketInitializationFailedException();
     this->fileDescriptor = fileDescriptor;
@@ -85,7 +85,7 @@ void Socket::sendTo(const char* data, size_t dataSize, const char* destinationIp
 }
 
 void Socket::shutdown(ShutdownManner shutdownManner) const {
-    if (::shutdown(fileDescriptor, (int) shutdownManner) < 0)
+    if (::shutdown(fileDescriptor, static_cast<int>(shutdownManner)) < 0)
         throw UnableToShutdownException();
 }
 
@@ -99,16 +99,16 @@ void Socket::close() const {
 // This function is used for creating a 'sockaddr_storage' struct from an IP-address string and a port number.
 sockaddr_storage Socket::getIpEndpoint(AddressFamily addressFamily, const char* ipAddressString, int portNumber) {
     sockaddr_storage ipEndpoint;
-    ipEndpoint.ss_family = (int) addressFamily;
+    ipEndpoint.ss_family = static_cast<int>(addressFamily);
     in6_addr ipAddress; // This struct is big enough to hold both IPv4 and IPv6 addresses.
-    if (inet_pton((int) addressFamily, ipAddressString, &ipAddress) != 1)
+    if (inet_pton(static_cast<int>(addressFamily), ipAddressString, &ipAddress) != 1)
         throw InvalidIpAddressException();
     switch (addressFamily) {
-        case INET:
+        case AddressFamily::INET:
             ((sockaddr_in*) &ipEndpoint)->sin_addr = *((in_addr*) &ipAddress);
             ((sockaddr_in*) &ipEndpoint)->sin_port = htons(portNumber);
             break;
-        case INET6:
+        case AddressFamily::INET6:
             ((sockaddr_in6*) &ipEndpoint)->sin6_addr = ipAddress;
             ((sockaddr_in6*) &ipEndpoint)->sin6_port = htons(portNumber);
             break;
@@ -118,18 +118,18 @@ sockaddr_storage Socket::getIpEndpoint(AddressFamily addressFamily, const char* 
 
 // This function is used for parsing an IP-address string and a port number from a 'sockaddr_storage' struct.
 void Socket::parseIpEndpoint(sockaddr_storage ipEndpoint, char* ipAddressString, int* portNumber) {
-    AddressFamily addressFamily = (AddressFamily) ipEndpoint.ss_family;
+    AddressFamily addressFamily = static_cast<AddressFamily>(ipEndpoint.ss_family);
     in6_addr ipAddress; // This struct is big enough to hold both IPv4 and IPv6 addresses.
     switch (addressFamily) {
-        case INET:
+        case AddressFamily::INET:
             *((in_addr*) &ipAddress) = ((sockaddr_in*) &ipEndpoint)->sin_addr;
             *portNumber = ntohs(((sockaddr_in*) &ipEndpoint)->sin_port);
             break;
-        case INET6:
+        case AddressFamily::INET6:
             *((in6_addr*) &ipAddress) = ((sockaddr_in6*) &ipEndpoint)->sin6_addr;
             *portNumber = ntohs(((sockaddr_in6*) &ipEndpoint)->sin6_port);
             break;
     }
-    if (inet_ntop((int) addressFamily, &ipAddress, ipAddressString, INET6_ADDRSTRLEN) == nullptr)
+    if (inet_ntop(static_cast<int>(addressFamily), &ipAddress, ipAddressString, INET6_ADDRSTRLEN) == nullptr)
         throw InvalidIpEndpointException();
 }
